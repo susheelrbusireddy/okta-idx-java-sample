@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+okta:
+  idx:
+    issuer: https://susheel-oie.oktapreview.com/oauth2/default
+    client-id: "0oa4bu2pnjflWOxMl1d7"
+    client-secret: "lhSPDDQm8CdNaLV_XeCPHVJUqZBkB1nGKsJAle02"
+    scopes: openid,profile,email,offline_access
+    redirect-uri: http://localhost:8080/login/callback
+    # Prints every raw Okta HTTP request/response body to the console - including your plaintext
+    # password, the client secret, and issued tokens. Off by default; flip to true only locally.
+    debug-http: true
+
+logging:
+  level:
+    com.okta.sample.idx: DEBUG
+  file:
+    name: logs/app.log

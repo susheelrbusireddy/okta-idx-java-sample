@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Verify Your Identity</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>Choose a Verification Method</h1>
+    <p>Okta requires an additional factor before you can sign in.</p>
+
+    <div class="errors" th:if="${errors != null and !errors.isEmpty()}">
+        <div th:each="error : ${errors}" th:text="${error}"></div>
+    </div>
+
+    <div th:each="authenticator : ${authenticators}" class="authenticator-option">
+        <span th:text="${authenticator.label}"></span>
+        <form th:action="@{/mfa/select}" method="post">
+            <input type="hidden" name="authenticatorId" th:value="${authenticator.id}"/>
+            <button type="submit">Select</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

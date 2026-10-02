@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Additional Step Required</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>Additional Step Required</h1>
+    <p>Okta returned a status this sample doesn't have a dedicated screen for:</p>
+    <p><strong th:text="${status}"></strong></p>
+
+    <div class="errors" th:if="${errors != null and !errors.isEmpty()}">
+        <div th:each="error : ${errors}" th:text="${error}"></div>
+    </div>
+
+    <a class="muted-link" th:href="@{/login}">Back to sign in</a>
+</div>
+</body>
+</html>

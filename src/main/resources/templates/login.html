@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Sign In</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>Sign In</h1>
+
+    <div class="errors" th:if="${errors != null and !errors.isEmpty()}">
+        <div th:each="error : ${errors}" th:text="${error}"></div>
+    </div>
+
+    <div th:if="${needsDeviceFingerprint}">
+        <p id="fingerprint-status" role="status">Preparing device recognition. This sample computes a browser identifier for use during authentication.</p>
+    </div>
+
+    <form th:unless="${needsDeviceFingerprint}" th:action="@{/login}" method="post">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username" required/>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required/>
+
+        <button type="submit">Sign In</button>
+    </form>
+
+    <script th:if="${needsDeviceFingerprint}" th:src="@{/js/fingerprintjs-5.2.0.min.js}" defer></script>
+    <script th:if="${needsDeviceFingerprint}" th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", async () => {
+            const status = document.getElementById("fingerprint-status");
+            try {
+                const agent = await FingerprintJS.load();
+                const result = await agent.get();
+                const response = await fetch(/*[[@{/device-fingerprint}]]*/ "/device-fingerprint", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: new URLSearchParams({ visitorId: result.visitorId })
+                });
+                if (!response.ok) {
+                    throw new Error("Fingerprint registration failed");
+                }
+                window.location.replace(/*[[@{/login}]]*/ "/login");
+            } catch (error) {
+                status.textContent = "Could not prepare device recognition. Reload the page to try again.";
+                status.setAttribute("role", "alert");
+            }
+        });
+    </script>
+</div>
+</body>
+</html>

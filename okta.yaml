@@ -1,0 +1,14 @@
+okta:
+  idx:
+    issuer: https://***********.oktapreview.com/oauth2/default
+    clientId: "**********"
+    clientSecret: "***************"
+    scopes:
+    - openid
+    - email
+    - profile
+    - offline_access
+    redirect-uri: http://localhost:8080/login/callback
+    # Prints every raw Okta HTTP request/response body to the console - including your plaintext
+    # password, the client secret, and issued tokens. Off by default; flip to true only locally.
+    debug-http: true

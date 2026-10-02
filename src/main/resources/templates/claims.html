@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Signed In</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>You're signed in</h1>
+
+    <h2>ID Token Claims</h2>
+    <table>
+        <tbody>
+        <tr th:each="claim : ${idClaims}">
+            <th th:text="${claim.key}"></th>
+            <td th:text="${claim.value}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>Access Token Claims</h2>
+    <table>
+        <tbody>
+        <tr th:each="claim : ${accessClaims}">
+            <th th:text="${claim.key}"></th>
+            <td th:text="${claim.value}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <details>
+        <summary>Raw tokens</summary>
+        <div>ID Token</div>
+        <div class="raw-token" th:text="${rawIdToken}"></div>
+        <div>Access Token</div>
+        <div class="raw-token" th:text="${rawAccessToken}"></div>
+    </details>
+
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">Sign Out</button>
+    </form>
+</div>
+</body>
+</html>

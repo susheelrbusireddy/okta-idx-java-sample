@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.14</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.okta.sample</groupId>
+    <artifactId>okta-idx-java-auth-sample</artifactId>
+    <version>1.0.0</version>
+    <name>okta-idx-java-auth-sample</name>
+    <description>Sample app: single-screen username/password login via the Okta IDX Java SDK</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <okta.idx.version>4.0.1</okta.idx.version>
+        <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.okta.idx.sdk</groupId>
+            <artifactId>okta-idx-java-api</artifactId>
+            <version>${okta.idx.version}</version>
+        </dependency>
+
+        <!-- Pulled in transitively at runtime scope only by okta-idx-java-api. Declared explicitly
+             at compile scope here because OktaIdxConfig references OkHttpRequestExecutorFactory
+             directly to build a debug-enabled IDXClient (see okta.idx.debug-http). -->
+        <dependency>
+            <groupId>com.okta.commons</groupId>
+            <artifactId>okta-http-okhttp</artifactId>
+            <version>1.3.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus-jose-jwt.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
