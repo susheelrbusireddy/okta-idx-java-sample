@@ -65,12 +65,6 @@ public class AuthController {
 
     @GetMapping("/login")
     public String loginForm(HttpSession session, Model model) {
-        if (!CurrentDeviceFingerprint.isValid(CurrentDeviceFingerprint.get())) {
-            session.removeAttribute(PROCEED_CONTEXT);
-            model.addAttribute("needsDeviceFingerprint", true);
-            return "login";
-        }
-
         model.addAttribute("needsDeviceFingerprint", false);
         RequestContext requestContext = new RequestContext();
         String deviceToken = CurrentDeviceToken.get();
@@ -141,17 +135,13 @@ public class AuthController {
         return -1;
     }
 
-    private static boolean hasDeviceFingerprint() {
-        return CurrentDeviceFingerprint.isValid(CurrentDeviceFingerprint.get());
-    }
-
     @PostMapping("/login")
     public String login(@RequestParam String username,
                          @RequestParam String password,
                          HttpSession session,
                          Model model) {
         ProceedContext proceedContext = (ProceedContext) session.getAttribute(PROCEED_CONTEXT);
-        if (proceedContext == null || !hasDeviceFingerprint()) {
+        if (proceedContext == null) {
             return "redirect:/login";
         }
 
@@ -168,7 +158,7 @@ public class AuthController {
         @SuppressWarnings("unchecked")
         List<Authenticator> authenticators = (List<Authenticator>) session.getAttribute(PENDING_AUTHENTICATORS);
 
-        if (proceedContext == null || authenticators == null || !hasDeviceFingerprint()) {
+        if (proceedContext == null || authenticators == null) {
             return "redirect:/login";
         }
 
@@ -190,7 +180,7 @@ public class AuthController {
     @PostMapping("/mfa/verify")
     public String verify(@RequestParam String code, HttpSession session, Model model) {
         ProceedContext proceedContext = (ProceedContext) session.getAttribute(PROCEED_CONTEXT);
-        if (proceedContext == null || !hasDeviceFingerprint()) {
+        if (proceedContext == null) {
             return "redirect:/login";
         }
 

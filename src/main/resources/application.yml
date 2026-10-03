@@ -3,9 +3,9 @@ server:
 
 okta:
   idx:
-    issuer: https://susheel-oie.oktapreview.com/oauth2/default
-    client-id: "0oa4bu2pnjflWOxMl1d7"
-    client-secret: "lhSPDDQm8CdNaLV_XeCPHVJUqZBkB1nGKsJAle02"
+    issuer: https://oie123.okta1.com/oauth2/default
+    client-id: "0oa2jlpxG84OHDdbN0g5"
+    client-secret: "zlTNxFbUcuQS1NLrcPKMiJkXaHYEa9FDktcGDIOEAuZyaxR5WKt6F7F8aqwZ7kFf"
     scopes: openid,profile,email,offline_access
     redirect-uri: http://localhost:8080/login/callback
     # Prints every raw Okta HTTP request/response body to the console - including your plaintext
