@@ -12,7 +12,6 @@ import com.okta.idx.sdk.api.model.VerifyAuthenticatorOptions;
 import com.okta.idx.sdk.api.request.IdentifyRequest;
 import com.okta.idx.sdk.api.response.AuthenticationResponse;
 import com.okta.idx.sdk.api.response.TokenResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.okta.sample.idx.devicetoken.CurrentDeviceFingerprint;
 import com.okta.sample.idx.devicetoken.CurrentDeviceToken;
 import com.okta.sample.idx.service.ClaimsService;
@@ -41,7 +40,6 @@ import java.util.List;
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final String PROCEED_CONTEXT = "proceedContext";
     private static final String PENDING_AUTHENTICATORS = "pendingAuthenticators";
@@ -65,6 +63,12 @@ public class AuthController {
 
     @GetMapping("/login")
     public String loginForm(HttpSession session, Model model) {
+        if (!CurrentDeviceFingerprint.isValid(CurrentDeviceFingerprint.get())) {
+            session.removeAttribute(PROCEED_CONTEXT);
+            model.addAttribute("needsDeviceFingerprint", true);
+            return "login";
+        }
+
         model.addAttribute("needsDeviceFingerprint", false);
         RequestContext requestContext = new RequestContext();
         String deviceToken = CurrentDeviceToken.get();
@@ -135,13 +139,17 @@ public class AuthController {
         return -1;
     }
 
+    private static boolean hasDeviceFingerprint() {
+        return CurrentDeviceFingerprint.isValid(CurrentDeviceFingerprint.get());
+    }
+
     @PostMapping("/login")
     public String login(@RequestParam String username,
                          @RequestParam String password,
                          HttpSession session,
                          Model model) {
         ProceedContext proceedContext = (ProceedContext) session.getAttribute(PROCEED_CONTEXT);
-        if (proceedContext == null) {
+        if (proceedContext == null || !hasDeviceFingerprint()) {
             return "redirect:/login";
         }
 
@@ -158,7 +166,7 @@ public class AuthController {
         @SuppressWarnings("unchecked")
         List<Authenticator> authenticators = (List<Authenticator>) session.getAttribute(PENDING_AUTHENTICATORS);
 
-        if (proceedContext == null || authenticators == null) {
+        if (proceedContext == null || authenticators == null || !hasDeviceFingerprint()) {
             return "redirect:/login";
         }
 
@@ -180,7 +188,7 @@ public class AuthController {
     @PostMapping("/mfa/verify")
     public String verify(@RequestParam String code, HttpSession session, Model model) {
         ProceedContext proceedContext = (ProceedContext) session.getAttribute(PROCEED_CONTEXT);
-        if (proceedContext == null) {
+        if (proceedContext == null || !hasDeviceFingerprint()) {
             return "redirect:/login";
         }
 
@@ -276,59 +284,38 @@ public class AuthController {
         log.info("status: {}", response.getAuthenticationStatus());
 
         if (response.getErrors() != null && !response.getErrors().isEmpty()) {
-            log.info("errors: {}", response.getErrors());
-            log.info("errors getAuthenticationStatus: {}", response.getAuthenticationStatus());
-            log.info("errors getProceedContext: {}", response.getProceedContext());
-            log.info("errors getTokenResponse: {}", response.getTokenResponse());
-        }
-
-        try {
-            log.info("full response object: {}", OBJECT_MAPPER.writeValueAsString(response));
-        } catch (Exception e) {
-            log.info("full response object: (failed to serialize: {})", e.getMessage());
+            log.info("error count: {}", response.getErrors().size());
         }
 
         if (response.getAuthenticators() != null && !response.getAuthenticators().isEmpty()) {
+            log.info("available authenticator count: {}", response.getAuthenticators().size());
             response.getAuthenticators().forEach(a ->
-                    log.info("available authenticator: id={} label={} type={}", a.getId(), a.getLabel(), a.getType()));
+                    log.debug("available authenticator type: {}", a.getType()));
         }
 
-        log.info("remediation form fields (only populated by this SDK during profile enrollment/sign-up):");
         logFormValues(response.getFormValues(), "  ");
 
         TokenResponse tokenResponse = response.getTokenResponse();
         if (tokenResponse != null) {
             log.info("tokenResponse: tokenType={} scope={} expiresIn={}",
                     tokenResponse.getTokenType(), tokenResponse.getScope(), tokenResponse.getExpiresIn());
-            log.info("idToken: {}", tokenResponse.getIdToken());
-            log.info("accessToken: {}", tokenResponse.getAccessToken());
         }
     }
 
-    /**
-     * Recursively prints the "remediation" form Okta returned - i.e. the field names/types/required
-     * flags the SDK expects the client to submit for whatever the next step is (identify, select an
-     * authenticator, answer a challenge, etc).
-     */
     private void logFormValues(List<FormValue> formValues, String indent) {
         if (formValues == null || formValues.isEmpty()) {
-            log.info("{}(no form fields on this response)", indent);
+            log.debug("{}(no form fields on this response)", indent);
             return;
         }
 
         for (FormValue field : formValues) {
-            log.info("{}field: name={} label={} type={} required={} value={}",
-                    indent, field.getName(), field.getLabel(), field.type, field.isRequired(), field.getValue());
+            List<Options> options = field.options();
+            log.debug("{}field: name={} label={} type={} required={} secret={} visible={} mutable={} optionCount={}",
+                    indent, field.getName(), field.getLabel(), field.type, field.isRequired(), field.secret,
+                    field.visible, field.mutable, options == null ? 0 : options.size());
 
             if (field.getForm() != null && field.getForm().getValue() != null) {
                 logFormValues(field.getForm().getValue(), indent + "  ");
-            }
-
-            List<Options> options = field.options();
-            if (options != null && !options.isEmpty()) {
-                for (Options option : options) {
-                    log.info("{}  option: label={} value={}", indent, option.getLabel(), option.getValue());
-                }
             }
         }
     }

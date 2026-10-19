@@ -1,5 +1,6 @@
 package com.okta.sample.idx.config;
 
+import com.okta.sample.idx.devicetoken.CurrentClientIp;
 import com.okta.sample.idx.devicetoken.CurrentDeviceFingerprint;
 import com.okta.sample.idx.devicetoken.CurrentDeviceToken;
 import okhttp3.Request;
@@ -16,6 +17,7 @@ class OktaIdxConfigCookieTest {
     void clearRequestState() {
         CurrentDeviceFingerprint.clear();
         CurrentDeviceToken.clear();
+        CurrentClientIp.clear();
     }
 
     @Test
@@ -32,6 +34,19 @@ class OktaIdxConfigCookieTest {
         assertThat(forwarded.headers().values("Cookie"))
                 .containsExactly("session=existing; DT=device-token; X-Device-Fingerprint=" + VISITOR_ID);
         assertThat(forwarded.headers().values("X-Device-Fingerprint")).containsExactly(VISITOR_ID);
+    }
+
+    @Test
+    void setsSingleForwardedForHeaderToTheBrowserIp() {
+        CurrentClientIp.set("203.0.113.7");
+        Request request = new Request.Builder()
+                .url("https://example.okta.com/idp/idx/interact")
+                .header("X-Forwarded-For", "198.51.100.1")
+                .build();
+
+        Request forwarded = OktaIdxConfig.addDeviceFingerprintHeadersAndCookies(request, request.newBuilder()).build();
+
+        assertThat(forwarded.headers().values("X-Forwarded-For")).containsExactly("203.0.113.7");
     }
 
     @Test

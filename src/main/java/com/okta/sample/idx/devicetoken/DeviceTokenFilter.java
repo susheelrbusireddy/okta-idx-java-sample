@@ -38,10 +38,12 @@ public final class DeviceTokenFilter implements Filter {
         try {
             CurrentDeviceToken.set(resolveDeviceToken(httpRequest, httpResponse));
             CurrentDeviceFingerprint.set(resolveDeviceFingerprint(httpRequest));
+            CurrentClientIp.set(httpRequest.getRemoteAddr());
             chain.doFilter(request, response);
         } finally {
             CurrentDeviceToken.clear();
             CurrentDeviceFingerprint.clear();
+            CurrentClientIp.clear();
         }
     }
 

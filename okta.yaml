@@ -1,8 +1,12 @@
+logging:
+  level:
+    com.okta.idx: debug
+    com.okta.sdk: debug
 okta:
   idx:
-    issuer: https://***********.oktapreview.com/oauth2/default
-    clientId: "**********"
-    clientSecret: "***************"
+    issuer: https://susheel-oie.oktapreview.com/oauth2/default
+    clientId: "0oa4bu2pnjflWOxMl1d7"
+    clientSecret: "lhSPDDQm8CdNaLV_XeCPHVJUqZBkB1nGKsJAle02"
     scopes:
     - openid
     - email
@@ -11,4 +15,4 @@ okta:
     redirect-uri: http://localhost:8080/login/callback
     # Prints every raw Okta HTTP request/response body to the console - including your plaintext
     # password, the client secret, and issued tokens. Off by default; flip to true only locally.
-    debug-http: true
+    debug-http: false
