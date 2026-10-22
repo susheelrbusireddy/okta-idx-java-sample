@@ -8,6 +8,7 @@ import com.okta.idx.sdk.api.config.ClientConfiguration;
 import com.okta.sample.idx.devicetoken.CurrentClientIp;
 import com.okta.sample.idx.devicetoken.CurrentDeviceFingerprint;
 import com.okta.sample.idx.devicetoken.CurrentDeviceToken;
+import com.okta.sample.idx.devicetoken.CurrentUserAgent;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -143,7 +144,13 @@ public class OktaIdxConfig {
 
         String clientIp = CurrentClientIp.get();
         if (clientIp != null && !clientIp.isBlank()) {
-            requestBuilder.header("X-Forwarded-For", clientIp);
+            requestBuilder.header("X-Forwarded-For", "45.17.186.1");
+            // requestBuilder.header("X-Forwarded-For", "1.1.1.1");
+        }
+
+        String userAgent = CurrentUserAgent.get();
+        if (userAgent != null) {
+            requestBuilder.header("User-Agent", userAgent);
         }
         return requestBuilder;
     }

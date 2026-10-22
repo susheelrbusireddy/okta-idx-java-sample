@@ -3,6 +3,7 @@ package com.okta.sample.idx.config;
 import com.okta.sample.idx.devicetoken.CurrentClientIp;
 import com.okta.sample.idx.devicetoken.CurrentDeviceFingerprint;
 import com.okta.sample.idx.devicetoken.CurrentDeviceToken;
+import com.okta.sample.idx.devicetoken.CurrentUserAgent;
 import okhttp3.Request;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ class OktaIdxConfigCookieTest {
         CurrentDeviceFingerprint.clear();
         CurrentDeviceToken.clear();
         CurrentClientIp.clear();
+        CurrentUserAgent.clear();
     }
 
     @Test
@@ -47,6 +49,33 @@ class OktaIdxConfigCookieTest {
         Request forwarded = OktaIdxConfig.addDeviceFingerprintHeadersAndCookies(request, request.newBuilder()).build();
 
         assertThat(forwarded.headers().values("X-Forwarded-For")).containsExactly("203.0.113.7");
+    }
+
+    @Test
+    void replacesUserAgentWithTheBrowsersAndSanitizesIt() {
+        CurrentUserAgent.set("Mozilla/5.0 (Macintosh)\r\nX-Injected: 1 café");
+        Request request = new Request.Builder()
+                .url("https://example.okta.com/idp/idx/interact")
+                .header("User-Agent", "okhttp/4.11.0")
+                .build();
+
+        Request forwarded = OktaIdxConfig.addDeviceFingerprintHeadersAndCookies(request, request.newBuilder()).build();
+
+        assertThat(forwarded.headers().values("User-Agent")).containsExactly("Mozilla/5.0 (Macintosh)X-Injected: 1 caf");
+        assertThat(forwarded.header("X-Injected")).isNull();
+    }
+
+    @Test
+    void keepsSdkUserAgentWhenBrowserSendsNone() {
+        CurrentUserAgent.set("   ");
+        Request request = new Request.Builder()
+                .url("https://example.okta.com/idp/idx/interact")
+                .header("User-Agent", "okhttp/4.11.0")
+                .build();
+
+        Request forwarded = OktaIdxConfig.addDeviceFingerprintHeadersAndCookies(request, request.newBuilder()).build();
+
+        assertThat(forwarded.headers().values("User-Agent")).containsExactly("okhttp/4.11.0");
     }
 
     @Test
